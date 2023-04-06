@@ -12,7 +12,10 @@ const cors = require("cors");
 app.use(bodyParser.json()); // supPORTjson encoded bodies
 app.use(bodyParser.urlencoded({ extended: false })); // supPORTencoded bodies
 app.use(cors());
-var scores = [0,0]
+var scores = {
+  player1: 0,
+  player2: 0,
+};
 var p_id, s_id;
 
 const server = http.createServer(app);
@@ -26,8 +29,8 @@ const io = require("socket.io")(server, {
 
 var room_id = 0;
 
-io.sockets.on("connection", function (socket) {
-  socket.on("join_room", (data) => {
+io.on("connection", function (socket) {
+  socket.on("join", (data) => {
     p_id = data.player_id;
     s_id = data.session_id; // Data sent from client when join_room event emitted
     console.log(p_id + " joined session " + s_id);
@@ -35,13 +38,31 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on("score", (data) => {
-    var { player_id, score } = data;
-    scores[player_id--] = score
-    console.log("{ player 1: " + scores[0] + " player2: " + scores[1] + " }");
+    console.log("Score recieved from player " + data.player_id);
+    if (data.player_id == 1) {
+      scores.player1 = data.score;
+    } else {
+      scores.player2 = data.score;
+    }
+    console.log(
+      "Scores updated. Current scores are: " + JSON.stringify(scores)
+    );
   });
 
-  socket.emit("testerEvent",  scores );
- 
+    setInterval(
+      function () {
+        console.log("Sending Scores..." + JSON.stringify(scores));
+        try {
+          socket.emit("sendScores", scores );
+          console.log("Scores sent!");
+        } catch (err) {
+          console.log(err);
+        }
+      },
+
+      2000
+    );
+  
 });
 
 //Start app,listen on PORT3030
