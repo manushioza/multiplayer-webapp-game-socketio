@@ -33,7 +33,7 @@ var p_id, s_id;
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: "https://mutliplayer-webapp-game.herokuapp.com",
+    origin: "https://multiplayer-webapp-game.herokuapp.com",
     methods: ["GET", "POST"],
     credentials: true,
   },
